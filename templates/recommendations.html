@@ -1,0 +1,53 @@
+<!-- recommendations.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gun Recommendations</title>
+    <!-- Add any CSS styles or Bootstrap CDN links for styling here -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Add your custom styles if needed -->
+    <style>
+        /* Add your custom styles here */
+    </style>
+</head>
+
+<body>
+
+    <div class="container mt-5">
+        <h2>Gun Recommendations</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Trigger Distance</th>
+                        <th>Grip Length</th>
+                        <th>Image Link</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for recommendation in recommendations %}
+                    <tr>
+
+                        <td>{{ recommendation.Title }}</td>
+                        <td>{{ recommendation.Trigger_Distance }}</td>
+                         <td>{{ recommendation.Grip_Length }}</td>
+                        <td><img src="{{ recommendation.Image_Link }}" alt="Gun Image" style="max-width: 100px;"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add any JavaScript libraries or custom scripts here -->
+
+</body>
+
+</html>

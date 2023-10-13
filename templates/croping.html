@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Cropper</title>
+    <style>
+        canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="imageInput" accept="image/*">
+    <canvas id="canvas"></canvas>
+    <button onclick="cropImage()">Crop Image</button>
+
+    <script>
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let image = new Image();
+
+        document.getElementById('imageInput').addEventListener('change', handleImage);
+
+        function handleImage(e) {
+            let reader = new FileReader();
+
+            reader.onload = function(event) {
+                image.onload = function() {
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    ctx.drawImage(image, 0, 0);
+                };
+                image.src = event.target.result;
+            };
+
+            reader.readAsDataURL(e.target.files[0]);
+        }
+
+        function cropImage() {
+            // Define the region to crop (for example, cropping the center)
+            let cropX = canvas.width / 4; // Change accordingly
+            let cropY = canvas.height / 4; // Change accordingly
+            let cropWidth = canvas.width / 2; // Change accordingly
+            let cropHeight = canvas.height / 2; // Change accordingly
+
+            // Create a new canvas to hold the cropped image
+            let croppedCanvas = document.createElement('canvas');
+            let croppedCtx = croppedCanvas.getContext('2d');
+
+            croppedCanvas.width = cropWidth;
+            croppedCanvas.height = cropHeight;
+
+            // Crop the image
+            croppedCtx.drawImage(canvas, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+            // Display the croppzed image (you can also save or use the cropped image as needed)
+            document.body.appendChild(croppedCanvas);
+        }
+    </script>
+</body>
+</html>

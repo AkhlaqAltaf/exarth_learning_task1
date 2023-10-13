@@ -1,0 +1,94 @@
+<!-- camera.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera App</title>
+</head>
+<body>
+
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="take-photo">Take Photo</button>
+    <button id="take-again" style="display: none;">Take Again</button>
+
+    <!-- Add input field for reference object size -->
+    <input type="number" id="reference-size" placeholder="Reference Object Size (cm)">
+
+    <button id="upload" style="display: none;">Upload</button>
+
+    <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const takePhotoBtn = document.getElementById('take-photo');
+        const takeAgainBtn = document.getElementById('take-again');
+        const uploadBtn = document.getElementById('upload');
+        const referenceSizeInput = document.getElementById('reference-size');
+
+        // Get user media
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => console.error('Error accessing camera:', error));
+
+        takePhotoBtn.addEventListener('click', (e) => {
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            takePhotoBtn.style.display = 'none';
+            takeAgainBtn.style.display = 'inline-block';
+            uploadBtn.style.display = 'inline-block';
+            referenceSizeInput.style.display = 'none';
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+        });
+
+        takeAgainBtn.addEventListener('click', () => {
+            takePhotoBtn.style.display = 'inline-block';
+            takeAgainBtn.style.display = 'none';
+            uploadBtn.style.display = 'none';
+            referenceSizeInput.style.display = 'inline-block';
+            video.style.display = 'block';
+            canvas.style.display = 'none';
+        });
+
+        uploadBtn.addEventListener('click', (e) => {
+            const dataUrl = canvas.toDataURL();
+            const blobData = dataURItoBlob(dataUrl);
+
+            const formData = new FormData();
+            formData.append('image', blobData, 'photo.png');
+
+            // Add reference object size to the form data
+            formData.append('reference_size', referenceSizeInput.value);
+
+            fetch('{% url 'hand_measurements:calculate_ppi' %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response =>  console.log("Response..", response))
+            .then(data =>     window.location.href = '{% url 'hand_measurements:view_ppi' %}')
+            .catch(error => console.error('Error uploading image:', error));
+        });
+
+        function dataURItoBlob(dataURI) {
+            const byteString = atob(dataURI.split(',')[1]);
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: 'image/png' });
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+    </script>
+</body>
+</html>

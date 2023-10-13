@@ -1,0 +1,169 @@
+<!-- camera.html -->
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera App</title>
+</head>
+<body>
+
+    <input type="file" accept="image/*" id="file-input" style="display: none;">
+    <label for="file-input">Upload Image</label>
+
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="take-photo">Take Photo</button>
+    <button id="take-again" style="display: none;">Take Again</button>
+    <button id="upload"  style="display: none;">Upload</button>
+   <h1 id="error" style="display: none">
+       Please Take Photo Again
+   </h1>
+    <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
+    <img id="captured-frame" style="display: none" src="../media/annotated_frame.jpg">
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const takePhotoBtn = document.getElementById('take-photo');
+        const takeAgainBtn = document.getElementById('take-again');
+        const uploadBtn = document.getElementById('upload');
+        const fileInput = document.getElementById('file-input');
+        const capturedFrame = document.getElementById('captured-frame');
+         const error = document.getElementById('error');
+
+        // Function to handle file selection
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Get user media
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => console.error('Error accessing camera:', error));
+
+        takePhotoBtn.addEventListener('click', () => {
+            capturePhoto();
+        });
+
+        takeAgainBtn.addEventListener('click', () => {
+            capturePhoto();
+        });
+
+        uploadBtn.addEventListener('click', () => {
+            uploadPhoto();
+        });
+
+      fileInput.addEventListener('change', handleFileSelect);
+
+// ...
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            capturedFrame.src = e.target.result;
+            capturedFrame.style.display = 'block';
+
+            // Initiate the upload process
+            uploadFile(file);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('image', file, file.name);
+
+    fetch('{% url 'hand_measurements:save_photo' %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+    })
+    .then(response => console.log("Response..", response))
+    .then(() => {
+        window.location.href = '{% url 'hand_measurements:recommendations' %}';
+    })
+    .catch(error => console.error('Error uploading image:', error));
+}
+
+        function capturePhoto() {
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+
+            const dataUrl = canvas.toDataURL();
+            const blobData = dataURItoBlob(dataUrl);
+
+            const formData = new FormData();
+            formData.append('image', blobData, 'photo.png');
+
+            fetch('{% url 'hand_measurements:get_frame' %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => console.log("Response..", response))
+            .then(() => {
+
+                takePhotoBtn.style.display = 'none';
+            takeAgainBtn.style.display = 'inline-block';
+            uploadBtn.style.display = 'inline-block';
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+            capturedFrame.style.display = 'block';
+
+
+            })
+            .catch(error => {
+   error.style.display ='block'
+            });
+
+
+
+
+        }
+
+        function uploadPhoto() {
+            const dataUrl = canvas.toDataURL();
+            const blobData = dataURItoBlob(dataUrl);
+
+            const formData = new FormData();
+            formData.append('image', blobData, 'photo.png');
+
+            fetch('{% url 'hand_measurements:save_photo' %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => console.log("Response..", response))
+            .then(() => {
+                window.location.href = '{% url 'hand_measurements:recommendations' %}';
+            })
+            .catch(error => console.error('Error uploading image:', error));
+        }
+
+        function dataURItoBlob(dataURI) {
+            const byteString = atob(dataURI.split(',')[1]);
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: 'image/png' });
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+    </script>
+</body>
+</html>
