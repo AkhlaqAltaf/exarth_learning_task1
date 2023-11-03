@@ -91,6 +91,36 @@ const grid = new controls3d.LandmarkGrid(landmarkContainer, {
     showHidden: false,
     centered: false,
 });
+
+function putResults(handSize , isRight){
+           if (isRight){
+                   //////Length/////////////////////////////
+            const lValue = document.getElementById('lValue');
+        lValue.textContent = handSize.hLength.toFixed(2);
+        const length = document.getElementById('length');
+        length.value = handSize.hLength;
+
+
+        //////////////trigger////////////////////////
+
+                 const tValue = document.getElementById('tValue');
+        tValue.textContent = handSize.hTrigerLength.toFixed(2);
+        const trigger = document.getElementById('trigger');
+        trigger.value = handSize.hTrigerLength;
+
+
+        ////////////////////grip///////////////////////////
+
+                 const gValue = document.getElementById('gValue');
+        gValue.textContent = handSize.hGripLength.toFixed(2);
+        const grip = document.getElementById('grip');
+        grip.value = handSize.hGripLength;
+
+           }
+
+
+
+}
 function onResults(results) {
   // Hide the spinner.
   document.body.classList.add('loaded');
@@ -114,27 +144,7 @@ function onResults(results) {
 
         if (handSize){
 
-            //////Length/////////////////////////////
-            const lValue = document.getElementById('lValue');
-        lValue.textContent = handSize.hLength.toFixed(2);
-        const length = document.getElementById('length');
-        length.value = handSize.hLength;
-
-
-        //////////////trigger////////////////////////
-
-                 const tValue = document.getElementById('tValue');
-        tValue.textContent = handSize.hTrigerLength.toFixed(2);
-        const trigger = document.getElementById('trigger');
-        trigger.value = handSize.hTrigerLength;
-
-
-        ////////////////////grip///////////////////////////
-
-                 const gValue = document.getElementById('gValue');
-        gValue.textContent = handSize.hGripLength.toFixed(2);
-        const grip = document.getElementById('grip');
-        grip.value = handSize.hGripLength;
+         putResults(handSize ,isRightHand )
 
         }
 
