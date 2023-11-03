@@ -28,16 +28,20 @@ class View:
             print("Post Request..........")
 
             image_file = request.FILES.get('image')
-
+            print(image_file)
             if image_file:
                 print("Image File Is Post...")
 
                 image_array = np.frombuffer(image_file.read(), np.uint8)
                 image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+                print(image)
                 hand_detector = HandDetector(image)
                 lmlist = hand_detector.get_lmlist()
-                if lmlist:
-                    sizes = hand_detector.get_sizes(lmlist=lmlist)
+
+                if hand_detector.is_hand():
+                    print("Hand Is Detected ............")
+                    sizes = hand_detector.get_sizes(lmlist=hand_detector.get_lmlist())
                     # Here is a recomendation system you should provide data in csv file
                     # also you should provide it row number that how many row you want to recommend
                     # here also it need features of hand / sizes
@@ -98,7 +102,7 @@ class View:
                 # if hand is detecting than it will process on machine learning
                 print(image)
                 hand_detector = HandDetector(image)
-
+                hand_detector.saveAnOther(frame=image)
                 if hand_detector.is_hand():
                     print("Hand is detecting...")
                     # this method return lmlist
@@ -127,3 +131,8 @@ class View:
     def croping(request):
 
         return render(request,"croping/index.html" )
+
+
+
+    def camera2(request):
+        return render(request , "hands.html")

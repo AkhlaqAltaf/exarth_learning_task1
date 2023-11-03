@@ -31,6 +31,6 @@ urlpatterns = [
     # path('calculate_ppi', View.calculate_ppi, name='calculate_ppi'),
     path('view_ppi', View.view_ppi, name='view_ppi'),
     path('get_frame', View.get_frame, name='get_frame'),
-    path('croping', View.croping, name='croping'),
+    path('camera2', View.camera2 , name="camera2")
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

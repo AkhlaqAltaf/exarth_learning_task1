@@ -35,6 +35,7 @@ class HandDetector:
     def get_lmlist(self):
         frame = self.image
         hands = detector.findHands(frame)
+        print("Hands....",hands)
         hand = hands[0]
 
         if hand:
@@ -81,3 +82,13 @@ class HandDetector:
             #             (255, 255, 255), 2)
             image_path = cv2.imwrite(file_path, frame)
             print("Image Path....", image_path)
+
+
+
+    def saveAnOther(self,frame):
+        print("image Saving.....")
+        file_path = os.path.join(static_directory, "test.jpg")
+
+
+        image_path = cv2.imwrite(file_path, frame)
+        print("Image Path....", image_path)

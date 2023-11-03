@@ -1,0 +1,334 @@
+
+<!--
+    MediaPipe Hands
+    https://google.github.io/mediapipe/solutions/hands.html#javascript-solution-api
+-->
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils_3d@0.3/control_utils_3d.css" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.6/control_utils.css" crossorigin="anonymous">
+     <link rel="stylesheet" type="text/css" href="../static/ai/hands.css" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.6/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils_3d@0.3/control_utils_3d.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.js" crossorigin="anonymous"></script>
+<script type="module" src="../static/ai/hands.js"></script>
+</head>
+
+<body>
+    <style>
+        .wrap {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button {
+  min-width: 200px;
+  min-height: 50px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: 1.3px;
+  font-weight: 700;
+  color: #313133;
+  background: #3a4241;
+background: linear-gradient(90deg, rgba(129,230,217,1) 0%, rgba(79,209,197,1) 100%);
+  border: none;
+  border-radius: 1000px;
+  box-shadow: 12px 12px 24px rgba(79,209,197,.64);
+  transition: all 0.3s ease-in-out 0s;
+  cursor: pointer;
+  outline: none;
+    opacity: 0.6;
+  position: relative;
+  padding: 10px;
+  }
+
+button::before {
+content: '';
+  border-radius: 1000px;
+  min-width: calc(300px + 12px);
+  min-height: calc(60px + 12px);
+  border: 6px solid #00FFCB;
+  box-shadow: 0 0 60px rgba(0,255,203,.64);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: all .3s ease-in-out 0s;
+
+}
+
+.button:hover, .button:focus {
+  color: #313133;
+  transform: translateY(-6px);
+}
+
+button:hover::before, button:focus::before {
+  opacity: 0.9;
+}
+
+button::after {
+  content: '';
+  width: 30px; height: 30px;
+  border-radius: 100%;
+  border: 6px solid #00FFCB;
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: ring 1.5s infinite;
+    opacity: 1;
+}
+
+button:hover::after, button:focus::after {
+  animation: none;
+  display: none;
+}
+
+@keyframes ring {
+  0% {
+    width: 30px;
+    height: 30px;
+    opacity: 1;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+      .square-box {
+        width: 33%;
+        height: 0;
+        padding-top: 33%;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+      }
+
+      .landmark-grid-container {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top:0;
+        left:0;
+        background-color: #99999999;
+      }
+         .control-panel-expander {
+        height: 10%;
+        width: 10%;
+        position: absolute;
+        top:0;
+        left:300px;
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+    </style>
+    <div class="container">
+      <video id="video" class="input_video"></video>
+      <canvas class="output_canvas" width="1280px" height="720px"></canvas>
+
+      <div class="loading">
+        <div class="spinner"></div>
+        <div class="message">
+          Loading
+        </div>
+      </div>
+      <a class="abs logo" href="http://www.mediapipe.dev" target="_blank">
+        <div style="display: flex;align-items: center;bottom: 0;right: 10px;">
+          <img class="logo" src="./img/logo_white.png" alt="" style="
+            height: 50px;">
+            <div style="margin-bottom: 30px">
+            <div class="slider-container">
+              <input type="range" id="length" min="0" max="10" step="0.01" value="0.0">
+              <label for="handSizeSlider">Hand Length:</label>
+              <span id="lValue">NULL</span>
+            </div>
+             <div class="slider-container">
+              <input type="range" id="trigger" min="0" max="10" step="0.01" value="0.0">
+              <label for="handSizeSlider">Triger Length:</label>
+              <span id="tValue">NULL</span>
+            </div>
+             <div class="slider-container">
+              <input type="range" id="grip" min="0" max="10" step="0.01" value="0.0">
+              <label for="handSizeSlider">Grip Length:</label>
+              <span id="gValue">NULL</span>
+            </div>
+        </div>
+        </div>
+      </a>
+      <div class="shoutout">
+          <div id="showings">
+
+         <div class="wrap">
+  <button class="button">Recommend</button>
+</div>
+        </div>
+      </div>
+    </div>
+    <div class="control-panel">
+    </div>
+    <div class='square-box'>
+      <div class="landmark-grid-container">
+      </div>
+    </div>
+
+<script type="module" src="../static/ai/hands.js"></script>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const takePhotoBtn = document.getElementById('take-photo');
+        const takeAgainBtn = document.getElementById('take-again');
+        const uploadBtn = document.getElementById('upload');
+        const fileInput = document.getElementById('file-input');
+        const capturedFrame = document.getElementById('captured-frame');
+         const error = document.getElementById('error');
+
+        // Function to handle file selection
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Get user media
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => console.error('Error accessing camera:', error));
+
+        takePhotoBtn.addEventListener('click', () => {
+            console.log("Take Photo.....");
+            capturePhoto();
+        });
+
+        takeAgainBtn.addEventListener('click', () => {
+            capturePhoto();
+        });
+
+        uploadBtn.addEventListener('click', () => {
+            uploadPhoto();
+        });
+
+      fileInput.addEventListener('change', handleFileSelect);
+
+// ...
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            capturedFrame.src = e.target.result;
+            {#capturedFrame.style.display = 'block';#}
+
+            // Initiate the upload process
+            uploadFile(file);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('image', file, file.name);
+
+    fetch('{% url 'hand_measurements:save_photo' %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        },
+    })
+    .then(response => console.log("Response..", response))
+    .then(() => {
+        window.location.href = '{% url 'hand_measurements:recommendations' %}';
+    })
+    .catch(error => console.error('Error uploading image:', error));
+}
+
+        function capturePhoto() {
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+
+            const dataUrl = canvas.toDataURL();
+            const blobData = dataURItoBlob(dataUrl);
+
+            const formData = new FormData();
+            formData.append('image', blobData, 'photo.png');
+            console.log(formData);
+            fetch('{% url 'hand_measurements:get_frame' %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => console.log("Response..", response))
+            .then(() => {
+
+
+
+
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+            capturedFrame.style.display = 'block';
+
+
+            })
+            .catch(error => {
+            console.log("Errooor,///"+error);
+            });
+
+
+
+
+        }
+
+        function uploadPhoto() {
+            const dataUrl = canvas.toDataURL();
+            const blobData = dataURItoBlob(dataUrl);
+
+            const formData = new FormData();
+            formData.append('image', blobData, 'photo.png');
+
+            fetch('{% url 'hand_measurements:save_photo' %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+            })
+            .then(response => console.log("Response..", response))
+            .then(() => {
+                window.location.href = '{% url 'hand_measurements:recommendations' %}';
+            })
+            .catch(error => console.error('Error uploading image:', error));
+        }
+
+        function dataURItoBlob(dataURI) {
+            const byteString = atob(dataURI.split(',')[1]);
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+            for (let i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([ab], { type: 'image/png' });
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+    </script>
+</body>
+
+</html>

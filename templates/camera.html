@@ -20,7 +20,7 @@
    </h1>
     <canvas id="canvas" width="640" height="480" style="display: none;"></canvas>
     <img id="captured-frame" style="display: none" src="../media/annotated_frame.jpg">
-
+<script type="module" src="../static/ai/handTest.js"></script>
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -41,9 +41,7 @@
             })
             .catch(error => console.error('Error accessing camera:', error));
 
-        takePhotoBtn.addEventListener('click', () => {
-            capturePhoto();
-        });
+
 
         takeAgainBtn.addEventListener('click', () => {
             capturePhoto();
